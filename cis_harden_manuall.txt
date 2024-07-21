@@ -1,0 +1,62 @@
+### Harden Master Nodes
+## 1- kernel parameters
+cp /root/rke2_1.28.10/tar/share/rke2/rke2-cis-sysctl.conf /etc/sysctl.d/60-rke2-cis.conf
+
+cat /etc/sysctl.d/60-rke2-cis.conf
+vm.panic_on_oom=0
+vm.overcommit_memory=1
+kernel.panic=10
+kernel.panic_on_oops=1
+
+systemctl restart systemd-sysctl
+
+## 2- add etcd user/group
+useradd -r -c "etcd user" -s /sbin/nologin -M etcd -U
+
+## 3- change permission of rke2 moduls and cni 
+chmod 600 /var/lib/rancher/rke2/agent/pod-manifests/kube-controller-manager.yaml
+
+chmod 600 /var/lib/rancher/rke2/agent/pod-manifests/kube-scheduler.yaml
+
+chmod 600 /var/lib/rancher/rke2/server/db/etcd/config
+
+chmod 600 /etc/cni/net.d/10-calico.conflist
+
+chmod -R 600 /var/lib/rancher/rke2/server/tls/*.crt
+
+## 4- add below admission plugin in apiserver
+vi /var/lib/rancher/rke2/agent/pod-manifests/kube-apiserver.yaml
+    - --enable-admission-plugins=NodeRestriction,EventRateLimit,AlwaysPullImages,SecurityContextDeny
+
+## 5- add profile tag in rke2 file
+vi /etc/rancher/rke2/config.yaml
+profile: "cis"
+
+## 6- restart rke2-server service
+systemctl restart rke2-server
+
+### Harden Agent Nodes
+## 7- kernel parameters
+cp /root/rke2_1.28.10/tar/share/rke2/rke2-cis-sysctl.conf /etc/sysctl.d/60-rke2-cis.conf
+
+cat /etc/sysctl.d/60-rke2-cis.conf
+vm.panic_on_oom=0
+vm.overcommit_memory=1
+kernel.panic=10
+kernel.panic_on_oops=1
+
+systemctl restart systemd-sysctl
+
+## 8- change permission of cni interface
+chmod 600 /etc/cni/net.d/10-calico.conflist
+
+## 9- add profile tag in rke2 file
+vi /etc/rancher/rke2/config.yaml
+profile: "cis"
+
+## 10- restart rke2-agent service
+systemctl restart rke2-agent
+
+
+## 11- run cis benchmark report on master nodes
+kube-bench --benchmark="rke2-cis-1.7"
