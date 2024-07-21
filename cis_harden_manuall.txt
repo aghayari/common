@@ -13,7 +13,7 @@ systemctl restart systemd-sysctl
 ## 2- add etcd user/group
 useradd -r -c "etcd user" -s /sbin/nologin -M etcd -U
 
-## 3- change permission of rke2 moduls and cni 
+## 3- change permission of rke2 modules and cni 
 chmod 600 /var/lib/rancher/rke2/agent/pod-manifests/kube-controller-manager.yaml
 
 chmod 600 /var/lib/rancher/rke2/agent/pod-manifests/kube-scheduler.yaml
