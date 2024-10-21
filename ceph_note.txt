@@ -1,0 +1,24 @@
+###############################
+### unknown and inactive pg ###
+###############################
+ceph health detail
+HEALTH_WARN Reduced data availability: 1 pg inactive; 2 slow ops, oldest one blocked for 960 sec, osd.2 has slow ops
+[WRN] PG_AVAILABILITY: Reduced data availability: 1 pg inactive
+    pg 1.0 is stuck inactive for 51m, current state unknown, last acting []
+
+ceph pg dump_stuck
+PG_STAT  STATE    UP  UP_PRIMARY  ACTING  ACTING_PRIMARY
+1.0      unknown  []          -1      []              -1
+
+ceph osd force-create-pg 1.0 --yes-i-really-mean-it
+
+#########################
+### undersized+peered ###
+#########################
+ceph pg stat
+49 pgs: 1 undersized+peered, 48 active+clean; 17 KiB data, 796 MiB used, 91 GiB / 92 GiB avail; 852 B/s rd, 1 op/s
+
+## If the replication size is higher than the number of available OSDs, you need to either increase the number of OSDs or reduce the replication size:
+ceph osd pool get .mgr size
+10
+ceph osd pool set .mgr size 3
