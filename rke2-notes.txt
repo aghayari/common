@@ -1,0 +1,12 @@
+for remove unused images on rke2 nodes, add below config on config.yaml
+vi /etc/rancher/rke2/config.yaml
+kubelet-arg:
+  - "image-gc-high-threshold=65"   # Percentage threshold when image garbage collection starts
+  - "image-gc-low-threshold=50"    # Percentage threshold when image garbage collection stops
+  - "minimum-image-ttl-duration=1h" # Minimum age an image must reach before it can be garbage collected
+
+rke2-killall.sh
+## restart rke2-server or rke2-agent
+systemctl restart rke2-server.service
+systemctl restart rke2-agent.service
+
